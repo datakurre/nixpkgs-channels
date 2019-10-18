@@ -1,4 +1,4 @@
-{ stdenv, fetchurl, fetchpatch, pkgconfig, perl, texinfo, yasm
+{ stdenv, fetchurl, fetchpatch, pkgconfig, perl, texinfo, yasm, buildPackages
 /*
  *  Licensing options (yes some are listed twice, filters and such are not listed)
  */
@@ -412,6 +412,8 @@ stdenv.mkDerivation rec {
     "--cross-prefix=${stdenv.cc.targetPrefix}"
     "--enable-cross-compile"
   ];
+
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
 
   nativeBuildInputs = [ perl pkgconfig texinfo yasm ];
 

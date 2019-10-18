@@ -1,5 +1,7 @@
-{ stdenv, fetchFromGitHub, pkgconfig, libsixel, yasm
+{ stdenv, lib, fetchFromGitHub, pkgconfig, libsixel, yasm
 }:
+
+with lib;
 
 stdenv.mkDerivation {
 
@@ -19,9 +21,12 @@ stdenv.mkDerivation {
     yasm
   ];
 
-  configurePhase = ''
-    ./configure --enable-libsixel --prefix=$out
-  '';
+  configureFlags = [
+    "--enable-libsixel"
+    "--prefix=$out"
+  ] ++ optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
+    "--enable-cross-compile"
+  ];
 
   postInstall = ''
     mv $out/bin/ffmpeg $out/bin/ffmpeg-sixel

@@ -10,6 +10,10 @@ stdenv.mkDerivation rec {
     sha256 = "175cp509wn1zv8p8mv37hkf6sxiskrsxdnq22mhlsg61jazz3n0q";
   };
 
+  preConfigure = ''
+    export ac_cv_func_malloc_0_nonnull=yes;
+  '';
+
   nativeBuildInputs = [ autoreconfHook docutils pkgconfig ];
 
   buildInputs = [ kerberos keyutils pam talloc ];

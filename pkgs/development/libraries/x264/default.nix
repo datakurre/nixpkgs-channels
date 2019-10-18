@@ -1,4 +1,4 @@
-{ stdenv, fetchurl, nasm }:
+{ stdenv, fetchurl, nasm, buildPackages }:
 
 stdenv.mkDerivation rec {
   pname = "x264";
@@ -11,6 +11,7 @@ stdenv.mkDerivation rec {
 
   postPatch = ''
     patchShebangs .
+    sed -i "s|..cross_prefix.strings|${buildPackages.busybox}/bin/strings|g" configure
   '';
 
   enableParallelBuilding = true;

@@ -1,13 +1,13 @@
 { stdenv, fetchurl, pkgconfig, perl, texinfo, yasm
 , alsaLib, bzip2, fontconfig, freetype, gnutls, libiconv, lame, libass, libogg
 , libssh, libtheora, libva, libdrm, libvorbis, libvpx, lzma, libpulseaudio, soxr
-, x264, x265, xvidcore, zlib, libopus, speex, nv-codec-headers, dav1d
+, x264, x265, xvidcore, zlib, libopus, speex, nv-codec-headers, dav1d, buildPackages
 , openglSupport ? false, libGLU_combined ? null
 # Build options
 , runtimeCpuDetectBuild ? true # Detect CPU capabilities at runtime
 , multithreadBuild ? true # Multithreading via pthreads/win32 threads
-, sdlSupport ? !stdenv.isAarch32, SDL ? null, SDL2 ? null
-, vdpauSupport ? !stdenv.isAarch32, libvdpau ? null
+, sdlSupport ? (!stdenv.isAarch32 && !stdenv.isAarch64), SDL ? null, SDL2 ? null
+, vdpauSupport ? (!stdenv.isAarch32 && !stdenv.isAarch64), libvdpau ? null
 # Developer options
 , debugDeveloper ? false
 , optimizationsDeveloper ? true
@@ -41,7 +41,7 @@
  */
 
 let
-  inherit (stdenv) isDarwin isFreeBSD isLinux isAarch32;
+  inherit (stdenv) isDarwin isFreeBSD isLinux isAarch32 isAarch64;
   inherit (stdenv.lib) optional optionals enableFeature;
 
   cmpVer = builtins.compareVersions;
@@ -54,9 +54,9 @@ let
   verFix = withoutFix: fixVer: withFix: if reqMatch fixVer then withFix else withoutFix;
 
   # Disable dependency that needs fixes before it will work on Darwin or Arm
-  disDarwinOrArmFix = origArg: minVer: fixArg: if ((isDarwin || isAarch32) && reqMin minVer) then fixArg else origArg;
+  disDarwinOrArmFix = origArg: minVer: fixArg: if ((isDarwin || isAarch32 || isAarch64) && reqMin minVer) then fixArg else origArg;
 
-  vaapiSupport = reqMin "0.6" && ((isLinux || isFreeBSD) && !isAarch32);
+  vaapiSupport = reqMin "0.6" && ((isLinux || isFreeBSD) && !isAarch32 && !isAarch64);
 
   vpxSupport = reqMin "0.6" && !isAarch32;
 in
@@ -106,7 +106,7 @@ stdenv.mkDerivation rec {
       "--enable-ffmpeg"
       "--disable-ffplay"
       (ifMinVer "0.6" "--enable-ffprobe")
-      (if reqMin "4" then null else "--disable-ffserver")
+    # (if reqMin "4" then null else "--disable-ffserver")
     # Libraries
       (ifMinVer "0.6" "--enable-avcodec")
       (ifMinVer "0.6" "--enable-avdevice")
@@ -121,17 +121,17 @@ stdenv.mkDerivation rec {
       (ifMinVer "0.6" "--disable-doc")
     # External Libraries
       "--enable-bzlib"
-      "--enable-gnutls"
-      (ifMinVer "1.0" "--enable-fontconfig")
-      (ifMinVer "0.7" "--enable-libfreetype")
+      # "--enable-gnutls"
+      # (ifMinVer "1.0" "--enable-fontconfig")
+      #(ifMinVer "0.7" "--enable-libfreetype")
       "--enable-libmp3lame"
       (ifMinVer "1.2" "--enable-iconv")
       "--enable-libtheora"
-      (ifMinVer "2.1" "--enable-libssh")
+      #(ifMinVer "2.1" "--enable-libssh")
       (ifMinVer "0.6" (enableFeature vaapiSupport "vaapi"))
       (ifMinVer "3.4" (enableFeature vaapiSupport "libdrm"))
       "--enable-vdpau"
-      "--enable-libvorbis"
+      #"--enable-libvorbis"
       (ifMinVer "0.6" (enableFeature vpxSupport "libvpx"))
       (ifMinVer "2.4" "--enable-lzma")
       (ifMinVer "2.2" (enableFeature openglSupport "opengl"))
@@ -141,9 +141,9 @@ stdenv.mkDerivation rec {
       "--enable-libx264"
       "--enable-libxvid"
       "--enable-zlib"
-      (ifMinVer "2.8" "--enable-libopus")
-      "--enable-libspeex"
-      (ifMinVer "2.8" "--enable-libx265")
+      #(ifMinVer "2.8" "--enable-libopus")
+      #"--enable-libspeex"
+      #(ifMinVer "2.8" "--enable-libx265")
       (ifMinVer "4.2" (enableFeature (dav1d != null) "libdav1d"))
     # Developer flags
       (enableFeature debugDeveloper "debug")
@@ -159,14 +159,16 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ perl pkgconfig texinfo yasm ];
 
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+
   buildInputs = [
     bzip2 fontconfig freetype gnutls libiconv lame libass libogg libssh libtheora
     libvdpau libvorbis lzma soxr x264 x265 xvidcore zlib libopus speex nv-codec-headers
   ] ++ optional openglSupport libGLU_combined
     ++ optional vpxSupport libvpx
-    ++ optionals (!isDarwin && !isAarch32) [ libpulseaudio ] # Need to be fixed on Darwin and ARM
-    ++ optional ((isLinux || isFreeBSD) && !isAarch32) libva
-    ++ optional ((isLinux || isFreeBSD) && !isAarch32) libdrm
+    ++ optionals (!isDarwin && !isAarch32 && !isAarch64) [ libpulseaudio ] # Need to be fixed on Darwin and ARM
+    ++ optional ((isLinux || isFreeBSD) && !isAarch32 && !isAarch64) libva
+    ++ optional ((isLinux || isFreeBSD) && !isAarch32 && !isAarch64) libdrm
     ++ optional isLinux alsaLib
     ++ optionals isDarwin darwinFrameworks
     ++ optional vdpauSupport libvdpau

@@ -1,13 +1,19 @@
-{ stdenv, fetchurl, libiconv, recode }:
+{ stdenv, fetchurl, libiconv, recode, buildPackages }:
 
 stdenv.mkDerivation rec {
   pname = "enca";
-  version = "1.19";
+  version = "2018-10-16";
 
   src = fetchurl {
-    url = "https://dl.cihar.com/enca/${pname}-${version}.tar.xz";
-    sha256 = "1f78jmrggv3jymql8imm5m9yc8nqjw5l99mpwki2245l8357wj1s";
+    url = "https://github.com/nijel/enca/archive/5de465b25a7e5dd432bf9b10f253391a1139e1c4.tar.gz";
+    sha256 = "0qdffzvq2h8ilnym5kcll3sr08db4igk9rh2p0zapj9bblp5p2bp";
   };
+
+  preConfigure = ''
+    export CC_FOR_BUILD=${buildPackages.stdenv.cc}/bin/cc
+  '';
+
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
 
   buildInputs = [ recode libiconv ];
 

@@ -1,6 +1,6 @@
 { stdenv, lib, fetchFromGitHub, autoreconfHook, pkgconfig
 , libXext, libdrm, libXfixes, wayland, libffi, libX11
-, libGL, mesa
+, libGL, mesa, buildPackages
 , minimal ? false, libva-minimal
 }:
 
@@ -19,6 +19,8 @@ stdenv.mkDerivation rec {
   outputs = [ "dev" "out" ];
 
   nativeBuildInputs = [ autoreconfHook pkgconfig ];
+
+  depsBuildBuild = [ buildPackages.wayland ];
 
   buildInputs = [ libdrm ]
     ++ lib.optionals (!minimal) [ libva-minimal libX11 libXext libXfixes wayland libffi libGL ];

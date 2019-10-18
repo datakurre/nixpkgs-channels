@@ -1,4 +1,4 @@
-{stdenv, fetchurl}:
+{ stdenv, buildPackages, autoreconfHook, fetchurl }:
 
 stdenv.mkDerivation rec {
   name = "alsa-firmware-1.0.29";
@@ -7,6 +7,10 @@ stdenv.mkDerivation rec {
     url = "mirror://alsa/firmware/${name}.tar.bz2";
     sha256 = "0gfcyj5anckjn030wcxx5v2xk2s219nyf99s9m833275b5wz2piw";
   };
+
+  patches = [ ./cross.patch ];
+
+  nativeBuildInputs = [ autoreconfHook buildPackages.stdenv.cc ];
 
   configureFlags = [
     "--with-hotplug-dir=$(out)/lib/firmware"

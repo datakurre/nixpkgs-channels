@@ -31,7 +31,7 @@ let result = stdenv.mkDerivation rec {
     xorg.libXi xorg.libXrender
   ];
 
-  nativeBuildInputs = [ autoPatchelfHook ];
+  buildDepsDeps = [ autoPatchelfHook ];
 
   # See: https://github.com/NixOS/patchelf/issues/10
   dontStrip = 1;

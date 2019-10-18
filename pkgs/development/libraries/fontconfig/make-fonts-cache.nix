@@ -1,4 +1,4 @@
-{ runCommand, lib, fontconfig, fontDirectories }:
+{ runCommand, lib, fontconfig, fontDirectories, buildPackages }:
 
 runCommand "fc-cache"
   {
@@ -13,6 +13,7 @@ runCommand "fc-cache"
   }
   ''
     export FONTCONFIG_FILE=$(pwd)/fonts.conf
+    export PATH=$PATH:${buildPackages.fontconfig}/bin
 
     cat > fonts.conf << EOF
     <?xml version='1.0'?>

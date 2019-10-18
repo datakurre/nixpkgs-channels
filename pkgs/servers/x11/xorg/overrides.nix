@@ -241,7 +241,14 @@ self: super:
   });
 
   libXres = super.libXres.overrideAttrs (attrs: {
+    configureFlags = attrs.configureFlags or []
+      ++ malloc0ReturnsNullCrossFlag;
     outputs = [ "out" "dev" "devdoc" ];
+  });
+
+  libXScrnSaver = super.libXScrnSaver.overrideAttrs (attrs: {
+    configureFlags = attrs.configureFlags or []
+      ++ malloc0ReturnsNullCrossFlag;
   });
 
   libXv = super.libXv.overrideAttrs (attrs: {
